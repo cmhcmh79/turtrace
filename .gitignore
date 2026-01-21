@@ -39,3 +39,52 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# ===================================
+# Android (소스코드는 포함, 빌드 결과물만 제외)
+# ===================================
+
+# Android 빌드 결과물 (제외)
+android/build/
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/build/
+android/app/release/
+android/app/debug/
+
+# Android 키스토어 (보안 - 반드시 제외!)
+*.keystore
+*.jks
+
+# Android Studio
+*.iml
+.idea/
+.gradle/
+gradle.properties
+
+# ===================================
+# iOS (소스코드는 포함, 빌드 결과물만 제외)
+# ===================================
+
+# iOS 빌드 결과물 (제외)
+ios/App/build/
+ios/App/Pods/
+ios/App/*.xcworkspace/xcuserdata/
+ios/App/*.xcodeproj/xcuserdata/
+ios/App/App.xcworkspace/xcshareddata/
+
+# CocoaPods
+Podfile.lock
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xccheckout
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
