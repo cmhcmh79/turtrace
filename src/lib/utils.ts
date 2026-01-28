@@ -41,7 +41,7 @@ export function formatCountdown(seconds: number): string {
 }
 
 /**
- * Race ID 생성 (현재 10분 슬롯)
+ * Race ID 생성 (현재 30분 슬롯)
  */
 export function getCurrentRaceId(): string {
   const now = new Date()
@@ -49,30 +49,33 @@ export function getCurrentRaceId(): string {
   const month = (now.getMonth() + 1).toString().padStart(2, '0')
   const day = now.getDate().toString().padStart(2, '0')
   const hour = now.getHours().toString().padStart(2, '0')
-  const minute = Math.floor(now.getMinutes() / 10) * 10
-  const min = minute.toString().padStart(2, '0')
   
-  return `${year}${month}${day}_${hour}${min}`
+  // 30분 단위로 변경
+  const minute = now.getMinutes() < 30 ? '00' : '30'
+  
+  return `${year}${month}${day}_${hour}${minute}`
 }
 
 /**
- * 다음 10분 슬롯 시간 계산
+ * 다음 30분 슬롯 시간 계산
  */
 export function getNextRaceTime(): Date {
   const now = new Date()
   const minute = now.getMinutes()
-  const nextSlot = Math.ceil((minute + 1) / 10) * 10
   
   const next = new Date(now)
-  next.setMinutes(nextSlot)
-  next.setSeconds(0)
-  next.setMilliseconds(0)
   
-  // 60분 넘어가면 다음 시간
-  if (nextSlot >= 60) {
+  // 현재 30분 미만이면 다음은 30분
+  // 현재 30분 이상이면 다음 시간 00분
+  if (minute < 30) {
+    next.setMinutes(30)
+  } else {
     next.setHours(next.getHours() + 1)
     next.setMinutes(0)
   }
+  
+  next.setSeconds(0)
+  next.setMilliseconds(0)
   
   return next
 }

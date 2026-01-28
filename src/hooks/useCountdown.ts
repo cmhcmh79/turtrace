@@ -10,7 +10,10 @@ interface UseCountdownReturn {
   progress: number // 0~1
 }
 
-export function useCountdown(targetTime: string, totalDuration: number = 600): UseCountdownReturn {
+export function useCountdown(
+  targetTime: string, 
+  totalDuration: number = 1800 // 30분 = 1800초
+): UseCountdownReturn {
   const [timeLeft, setTimeLeft] = useState(0)
 
   useEffect(() => {

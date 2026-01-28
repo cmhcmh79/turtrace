@@ -1,59 +1,77 @@
-// src/hooks/useRace.ts
-'use client'
-
 import { useState, useEffect } from 'react'
-import { Race } from '@/types/race'
+import { createClient } from '@supabase/supabase-js'
 
-interface UseRaceReturn {
-  race: Race | null
-  loading: boolean
-  error: string | null
-  refetch: () => Promise<void>
+interface Race {
+  id: string
+  date: string
+  race_number: number
+  start_time: string
+  seed: string
+  frames: number[][]
+  result: number[]
+  status: string
 }
 
-export function useRace(raceId?: string): UseRaceReturn {
-  const [race, setRace] = useState<Race | null>(null)
+export function useRaces() {
+  console.log('useRaces called')
+
+  const [races, setRaces] = useState<Race[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const fetchRace = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const endpoint = raceId 
-        ? `/api/race/${raceId}` 
-        : '/api/race/current'
-      
-      const response = await fetch(endpoint)
-      
-      if (!response.ok) {
-        throw new Error('레이스 정보를 가져올 수 없습니다')
-      }
-
-      const data = await response.json()
-      setRace(data.race)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류')
-      setRace(null)
-    } finally {
-      setLoading(false)
-    }
-  }
+  
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
-    fetchRace()
+    async function fetchRaces() {
+      try {
+        const today = new Date().toISOString().split('T')[0]
 
-    // 30초마다 자동 갱신 (옵션)
-    const interval = setInterval(fetchRace, 30000)
-    
-    return () => clearInterval(interval)
-  }, [raceId])
+        // 1. 오늘 레이스가 있는지 확인
+        const { data: existingRaces, error: fetchError } = await supabase
+          .from('races')
+          .select('*')
+          .eq('date', today)
+          .order('race_number', { ascending: true })
 
-  return {
-    race,
-    loading,
-    error,
-    refetch: fetchRace
-  }
+        if (fetchError) throw fetchError
+
+        // 2. 레이스가 없으면 생성 요청
+        if (!existingRaces || existingRaces.length === 0) {
+          console.log('No races found for today, generating...')
+          
+          const response = await fetch('/api/race/ensure-today')
+          const result = await response.json()
+          
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to generate races')
+          }
+
+          // 3. 다시 조회
+          const { data: newRaces, error: refetchError } = await supabase
+            .from('races')
+            .select('*')
+            .eq('date', today)
+            .order('race_number', { ascending: true })
+
+          if (refetchError) throw refetchError
+          setRaces(newRaces || [])
+        } else {
+          setRaces(existingRaces)
+        }
+
+        setLoading(false)
+      } catch (err: any) {
+        console.error('Error fetching races:', err)
+        setError(err.message)
+        setLoading(false)
+      }
+    }
+
+    fetchRaces()
+  }, [supabase])
+
+  return { races, loading, error }
 }

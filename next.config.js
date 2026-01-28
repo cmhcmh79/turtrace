@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
   
   // Capacitor용 정적 export
-  output: 'export',
+  // output: 'export',
   
   // 이미지 최적화 비활성화 (정적 export 필요)
   images: {
