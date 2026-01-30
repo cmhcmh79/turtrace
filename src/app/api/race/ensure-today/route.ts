@@ -1,3 +1,5 @@
+// src/app/api/race/ensure-today/route.ts
+
 import { NextResponse } from 'next/server'
 
 export async function GET() {
